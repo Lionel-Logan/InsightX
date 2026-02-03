@@ -1,0 +1,22 @@
+fastapi
+uvicorn[standard]
+
+# Async HTTP
+httpx
+
+# Data validation
+pydantic
+pydantic-settings
+
+# Caching
+redis
+
+# Async utilities
+anyio
+
+# Environment
+python-dotenv
+
+# Optional AI / reasoning (future-safe)
+openai
+tiktoken

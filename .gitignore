@@ -1,0 +1,174 @@
+############################################
+# InsightX – Global
+############################################
+
+# Environment & secrets
+.env
+.env.*
+*.env
+secrets/
+config/secrets/
+*.key
+*.pem
+*.crt
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+############################################
+# IDEs & Editors
+############################################
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+out/
+
+# VS Code
+.vscode/
+.history/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+############################################
+# Flutter / Dart (Client)
+############################################
+
+# Flutter build artifacts
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+
+# Dart tooling
+.dart_tool/
+
+# Flutter generated files
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/app.flx
+ios/Pods/
+
+android/.gradle/
+android/local.properties
+android/key.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+
+############################################
+# Java / Spring Boot (Backend)
+############################################
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+dependency-reduced-pom.xml
+
+# Gradle
+.gradle/
+build/
+!gradle-wrapper.jar
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+############################################
+# Python / FastAPI (Intelligence Service)
+############################################
+
+# Virtual environments
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Mypy
+.mypy_cache/
+
+############################################
+# Redis / Databases
+############################################
+
+# Redis
+dump.rdb
+redis-data/
+
+# PostgreSQL
+*.sql
+*.dump
+pgdata/
+postgres-data/
+
+############################################
+# Docker
+############################################
+
+# Docker local volumes
+docker-data/
+docker-volumes/
+
+# Docker override files
+docker-compose.override.yml
+
+############################################
+# API / Generated Assets
+############################################
+
+# Cached external API responses
+cache/
+tmp/
+runtime-cache/
+
+# Downloaded media assets
+media-cache/
+posters/
+backdrops/
+covers/
+
+############################################
+# Misc
+############################################
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+*.orig
+
+# Node (if ever used for tooling)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
