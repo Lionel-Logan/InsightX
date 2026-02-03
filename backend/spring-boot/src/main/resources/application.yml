@@ -1,0 +1,210 @@
+# InsightX Spring Boot Configuration
+# This file contains all application settings
+# Use environment variables for sensitive data (passwords, secrets)
+
+# ========================================
+# Server Configuration
+# ========================================
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+# ========================================
+# Spring Application
+# ========================================
+spring:
+  application:
+    name: insightx-backend
+  
+  # ========================================
+  # Database Configuration - PostgreSQL
+  # ========================================
+  datasource:
+    url: jdbc:postgresql://localhost:5432/insightx?targetServerType=any&loggerLevel=OFF
+    username: insightx
+    password: insightx
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      data-source-properties:
+        ApplicationName: InsightX
+        stringtype: unspecified
+        socketTimeoutSeconds: 60
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # ========================================
+  # JPA/Hibernate Configuration
+  # ========================================
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none  # Disable Hibernate DDL, use Flyway instead
+    show-sql: false  # Set to true for debugging SQL queries
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  # ========================================
+  # Flyway Configuration
+  # ========================================
+  flyway:
+    enabled: false
+  
+  # ========================================
+  # Redis Configuration
+  # ========================================
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 60000
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+  
+  # ========================================
+  # Security Configuration
+  # ========================================
+  security:
+    # JWT secret should be loaded from environment variable
+    # export JWT_SECRET="your-very-long-and-secure-secret-key-at-least-256-bits"
+    jwt:
+      secret: ${JWT_SECRET:default-secret-key-change-in-production}
+      access-token-expiration: 3600000   # 1 hour in milliseconds
+      refresh-token-expiration: 604800000 # 7 days in milliseconds
+
+# ========================================
+# FastAPI Integration Configuration
+# ========================================
+fastapi:
+  base-url: ${FASTAPI_URL:http://localhost:8000}
+  service-token: ${FASTAPI_SERVICE_TOKEN:default-service-token}
+  timeout:
+    connect: 5000    # 5 seconds
+    read: 30000      # 30 seconds
+  retry:
+    max-attempts: 3
+    backoff-ms: 1000
+
+# ========================================
+# Cache Configuration
+# ========================================
+cache:
+  ttl:
+    media-metadata: 7200       # 2 hours
+    recommendations: 1800      # 30 minutes
+    watch-providers: 3600      # 1 hour
+    ai-explanations: 3600      # 1 hour
+    search-results: 900        # 15 minutes
+    taste-profile: 3600        # 1 hour
+    user-preferences: 86400    # 24 hours
+
+# ========================================
+# Logging Configuration
+# ========================================
+logging:
+  level:
+    root: INFO
+    com.insightx: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# ========================================
+# Actuator Configuration (Health Checks)
+# ========================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# ========================================
+# CORS Configuration
+# ========================================
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:*}  # Flutter dev server
+  allowed-methods: GET,POST,PUT,DELETE,PATCH,OPTIONS
+  allowed-headers: "*"
+  allow-credentials: true
+  max-age: 3600
+
+# ========================================
+# Application Specific Configuration
+# ========================================
+insightx:
+  # Minimum ratings required to generate taste profile
+  taste-profile:
+    min-ratings: 5
+    recalculation-threshold-days: 7
+    recalculation-trigger-ratings: 5
+  
+  # Pagination defaults
+  pagination:
+    default-page-size: 20
+    max-page-size: 100
+  
+  # Feature flags
+  features:
+    ai-explanations: true
+    social-reviews: false  # Future feature
+    collaborative-filtering: false  # Future feature
+
+# ========================================
+# Profile-Specific Configuration
+# ========================================
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    clean-disabled: false  # Allow clean in dev
+logging:
+  level:
+    com.insightx: DEBUG
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate  # Never auto-update schema in production
+  flyway:
+    enabled: true
+    clean-disabled: true  # Prevent accidental clean
+logging:
+  level:
+    root: WARN
+    com.insightx: INFO

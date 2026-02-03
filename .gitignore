@@ -126,10 +126,20 @@ dump.rdb
 redis-data/
 
 # PostgreSQL
-*.sql
+
+# Ignore database dumps / exports
 *.dump
+*.backup
+*.bak
+
+# Ignore local PostgreSQL data directories
 pgdata/
 postgres-data/
+
+# Allow version-controlled SQL (migrations, schema, seeds)
+!migrations/**/*.sql
+!db/**/*.sql
+!src/main/resources/db/**/*.sql
 
 ############################################
 # Docker
