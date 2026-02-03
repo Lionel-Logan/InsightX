@@ -1,73 +1,64 @@
 ############################################
-# InsightX – Language Statistics Control
+# InsightX – STRICT Language Enforcement
 ############################################
 
-# Treat documentation as documentation
+# -----------------------------------------
+# ALLOWED languages (ONLY these count)
+# -----------------------------------------
+
+*.java linguist-language=Java
+*.py   linguist-language=Python
+*.dart linguist-language=Dart
+*.sql  linguist-language=SQL
+
+# -----------------------------------------
+# FORCE-IGNORE everything else
+# -----------------------------------------
+
+# Mark all files as vendored by default
+* linguist-vendored
+
+# Un-vendor the allowed languages
+!*.java linguist-vendored
+!*.py   linguist-vendored
+!*.dart linguist-vendored
+!*.sql  linguist-vendored
+
+# -----------------------------------------
+# Explicitly kill common offenders
+# -----------------------------------------
+
+# HTML / templates
+*.html linguist-vendored
+*.htm  linguist-vendored
+
+# CMake
+CMakeLists.txt linguist-vendored
+*.cmake linguist-vendored
+
+# Config & metadata
+*.yml linguist-vendored
+*.yaml linguist-vendored
+*.json linguist-vendored
+*.xml linguist-vendored
+*.properties linguist-vendored
+*.toml linguist-vendored
+
+# Shell / scripts
+*.sh linguist-vendored
+
+# Docs
 *.md linguist-documentation
 *.txt linguist-documentation
 
-# -------------------------------
-# Explicitly INCLUDED languages
-# -------------------------------
+# Platform / build folders
+android/** linguist-vendored
+ios/** linguist-vendored
+linux/** linguist-vendored
+windows/** linguist-vendored
+macos/** linguist-vendored
 
-# Flutter / Dart
-*.dart linguist-language=Dart
-
-# Java / Spring Boot
-*.java linguist-language=Java
-*.kt linguist-language=Kotlin
-
-# Python / FastAPI
-*.py linguist-language=Python
-
-# Configuration / Infra
-*.yml linguist-language=YAML
-*.yaml linguist-language=YAML
-*.properties linguist-language=Properties
-*.toml linguist-language=TOML
-*.json linguist-language=JSON
-
-# SQL (migrations, schema)
-*.sql linguist-language=SQL
-
-# Shell (tooling / scripts)
-*.sh linguist-language=Shell
-
-# -------------------------------
-# Explicitly EXCLUDED languages
-# -------------------------------
-
-# Native / platform code not authored by InsightX
-*.c linguist-vendored
-*.h linguist-vendored
-*.cpp linguist-vendored
-*.hpp linguist-vendored
-*.cc linguist-vendored
-
-# iOS native
-*.swift linguist-vendored
-*.m linguist-vendored
-*.mm linguist-vendored
-
-# Android native
-*.aidl linguist-vendored
-
-# Web / JS ecosystems (not used)
-*.js linguist-vendored
-*.ts linguist-vendored
-*.jsx linguist-vendored
-*.tsx linguist-vendored
-
-# Build artifacts & generated code
-generated/** linguist-generated
 build/** linguist-generated
 target/** linguist-generated
 .gradle/** linguist-generated
 .dart_tool/** linguist-generated
-
-# Flutter / Android platform boilerplate
-android/** linguist-vendored
-ios/** linguist-vendored
-macos/** linguist-vendored
-windows/** linguist-vendored
-linux/** linguist-vendored
