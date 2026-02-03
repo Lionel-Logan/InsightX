@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7
+    container_name: insightx-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16
+    container_name: insightx-postgres
+    environment:
+      POSTGRES_DB: insightx
+      POSTGRES_USER: insightx
+      POSTGRES_PASSWORD: insightx
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
