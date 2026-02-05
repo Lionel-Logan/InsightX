@@ -20,6 +20,11 @@ spring:
   application:
     name: insightx-backend
   
+  # Disable default static resource handling
+  web:
+    resources:
+      add-mappings: false
+  
   # ========================================
   # Database Configuration - PostgreSQL
   # ========================================
@@ -60,7 +65,9 @@ spring:
   # Flyway Configuration
   # ========================================
   flyway:
-    enabled: false
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
   
   # ========================================
   # Redis Configuration
@@ -80,12 +87,32 @@ spring:
   # Security Configuration
   # ========================================
   security:
-    # JWT secret should be loaded from environment variable
-    # export JWT_SECRET="your-very-long-and-secure-secret-key-at-least-256-bits"
     jwt:
-      secret: ${JWT_SECRET:default-secret-key-change-in-production}
-      access-token-expiration: 3600000   # 1 hour in milliseconds
-      refresh-token-expiration: 604800000 # 7 days in milliseconds
+      secret: ${JWT_SECRET:default-secret-key-change-in-production-must-be-at-least-32-characters-long}
+      access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:3600000}   # 1 hour (default)
+      refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:2592000000} # 30 days (default)
+      verification-token-expiration: ${JWT_VERIFICATION_TOKEN_EXPIRATION:86400000} # 24 hours (default)
+
+  # ========================================
+  # Email Configuration (SMTP)
+  # ========================================
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    from: ${MAIL_FROM:noreply@insightx.com}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    test-connection: false  # Set to true to test on startup
 
 # ========================================
 # FastAPI Integration Configuration
@@ -114,6 +141,20 @@ cache:
     user-preferences: 86400    # 24 hours
 
 # ========================================
+# Swagger/OpenAPI Configuration
+# ========================================
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: true
+
+# ========================================
 # Logging Configuration
 # ========================================
 logging:
@@ -138,6 +179,9 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  health:
+    mail:
+      enabled: false  # Disable mail health check (optional component)
 
 # ========================================
 # CORS Configuration
@@ -152,6 +196,10 @@ cors:
 # ========================================
 # Application Specific Configuration
 # ========================================
+app:
+  name: ${APP_NAME:InsightX}
+  environment: ${APP_ENVIRONMENT:development}
+
 insightx:
   # Minimum ratings required to generate taste profile
   taste-profile:
@@ -169,6 +217,18 @@ insightx:
     ai-explanations: true
     social-reviews: false  # Future feature
     collaborative-filtering: false  # Future feature
+  
+  # Rate limiting configuration
+  rate-limit:
+    login:
+      capacity: ${RATE_LIMIT_LOGIN_CAPACITY:5}
+      duration-minutes: ${RATE_LIMIT_LOGIN_DURATION_MINUTES:1}
+    register:
+      capacity: ${RATE_LIMIT_REGISTER_CAPACITY:3}
+      duration-minutes: ${RATE_LIMIT_REGISTER_DURATION_MINUTES:10}
+    verification:
+      capacity: ${RATE_LIMIT_VERIFICATION_CAPACITY:10}
+      duration-minutes: ${RATE_LIMIT_VERIFICATION_DURATION_MINUTES:5}
 
 # ========================================
 # Profile-Specific Configuration

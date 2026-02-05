@@ -1,44 +1,64 @@
 package com.insightx.repositories;
 
-// UserRepository - Data access layer for User entity
-// Extends JpaRepository for CRUD operations
-//
-// Custom Query Methods:
-// - findByUsername(String username): Optional<User>
-//   Find user by username (for login)
-//
-// - findByEmail(String email): Optional<User>
-//   Find user by email (for login, duplicate check)
-//
-// - existsByUsername(String username): boolean
-//   Check if username exists (for registration validation)
-//
-// - existsByEmail(String email): boolean
-//   Check if email exists (for registration validation)
-//
-// - findByRegion(String region): List<User>
-//   Find all users in a region (for analytics)
-//
-// - findByActiveTrue(): List<User>
-//   Find all active users (exclude soft-deleted)
-//
-// - findByCreatedAtBetween(LocalDateTime start, LocalDateTime end): List<User>
-//   Find users created in date range (for analytics)
-//
-// Query Method Features:
-// - Use Spring Data JPA method name conventions
-// - No need for @Query annotations for simple queries
-// - Return Optional<User> for single results to handle null safely
-//
-// Pagination Support:
-// - Use Pageable parameter for methods that return lists
-// - Example: Page<User> findByRegion(String region, Pageable pageable)
-//
-// Transaction Management:
-// - @Transactional at service layer, not repository
-// - Read-only transactions for query methods
-//
-// Performance Considerations:
-// - Add @EntityGraph for fetching relationships
-// - Use projections for specific field retrieval
-// - Consider query caching for frequently accessed data
+import com.insightx.entities.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * User Repository - Data access layer for User entity
+ * 
+ * Provides CRUD operations and custom query methods for User management
+ */
+@Repository
+public interface UserRepository extends JpaRepository<User, UUID> {
+
+    /**
+     * Find user by username (case-insensitive)
+     */
+    Optional<User> findByUsername(String username);
+
+    /**
+     * Find user by email (case-insensitive)
+     */
+    Optional<User> findByEmail(String email);
+
+    /**
+     * Check if username exists
+     */
+    boolean existsByUsername(String username);
+
+    /**
+     * Check if email exists
+     */
+    boolean existsByEmail(String email);
+
+    /**
+     * Find all users in a specific region
+     */
+    List<User> findByRegion(String region);
+
+    /**
+     * Find all active users
+     */
+    List<User> findByActiveTrue();
+
+    /**
+     * Find all verified users
+     */
+    List<User> findByEmailVerifiedTrue();
+
+    /**
+     * Find users created within a date range
+     */
+    List<User> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    /**
+     * Find users by role
+     */
+    List<User> findByRole(String role);
+}
