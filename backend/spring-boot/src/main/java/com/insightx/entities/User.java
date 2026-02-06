@@ -78,6 +78,10 @@ public class User {
     @Builder.Default
     private String role = "USER";
 
+    @Size(max = 500, message = "Avatar URL must not exceed 500 characters")
+    @Column(name = "avatar_url", length = 500)
+    private String avatarUrl;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

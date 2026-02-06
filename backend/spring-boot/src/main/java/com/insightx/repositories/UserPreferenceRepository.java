@@ -1,53 +1,61 @@
 package com.insightx.repositories;
 
-// UserPreferenceRepository - Data access for user preferences
-// Extends JpaRepository for CRUD operations
-//
-// Custom Query Methods:
-// - findByUserId(UUID userId): List<UserPreference>
-//   Get all preferences for user (typically loaded at login)
-//
-// - findByUserIdAndKey(UUID userId, String key): Optional<UserPreference>
-//   Get specific preference by key
-//
-// - existsByUserIdAndKey(UUID userId, String key): boolean
-//   Check if preference exists
-//
-// - deleteByUserIdAndKey(UUID userId, String key): void
-//   Remove specific preference
-//
-// Bulk Operations:
-// - @Modifying
-//   @Query("DELETE FROM UserPreference up WHERE up.userId = :userId")
-//   void deleteAllByUserId(@Param("userId") UUID userId)
-//   Reset all preferences for user
-//
-// Batch Retrieval:
-// - @Query("SELECT up FROM UserPreference up WHERE up.userId = :userId AND up.key IN :keys")
-//   List<UserPreference> findByUserIdAndKeyIn(@Param("userId") UUID userId, @Param("keys") List<String> keys)
-//   Get multiple preferences at once
-//
-// Common Preference Keys (for reference):
-// - "theme" -> "dark" | "light"
-// - "language" -> "en" | "es" | "fr" | etc.
-// - "explicit_content" -> "true" | "false"
-// - "notification_recommendations" -> "true" | "false"
-// - "default_media_type" -> "movie" | "book" | "game"
-// - "results_per_page" -> "20" | "50" | "100"
-// - "auto_play_trailers" -> "true" | "false"
-//
-// Usage Pattern:
-// - Load all preferences at user login
-// - Cache in application memory or Redis
-// - Update individual preferences via PUT requests
-// - Return as Map<String, String> to service layer
-//
-// Performance Tips:
-// - Index on (userId, key) for fast lookups
-// - Fetch all preferences for user in one query
-// - Cache frequently accessed preferences
-// - Consider using @Cacheable annotation
-//
-// Transaction Management:
-// - Use @Transactional for batch updates
-// - Ensure atomic updates for related preferences
+import com.insightx.entities.UserPreference;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * UserPreferenceRepository - Data access for user preferences
+ * 
+ * Handles key-value storage for user settings and privacy preferences.
+ * Common keys: theme, language, explicit_content, notifications, etc.
+ */
+@Repository
+public interface UserPreferenceRepository extends JpaRepository<UserPreference, UUID> {
+
+    /**
+     * Find all preferences for a user
+     * Used during login to load all user settings
+     */
+    List<UserPreference> findByUserId(UUID userId);
+
+    /**
+     * Find specific preference by user and key
+     */
+    Optional<UserPreference> findByUserIdAndKey(UUID userId, String key);
+
+    /**
+     * Check if a preference exists
+     */
+    boolean existsByUserIdAndKey(UUID userId, String key);
+
+    /**
+     * Delete specific preference
+     */
+    void deleteByUserIdAndKey(UUID userId, String key);
+
+    /**
+     * Delete all preferences for a user (account deletion or reset)
+     */
+    @Modifying
+    @Query("DELETE FROM UserPreference up WHERE up.userId = :userId")
+    void deleteAllByUserId(@Param("userId") UUID userId);
+
+    /**
+     * Batch retrieval of multiple preferences
+     */
+    @Query("SELECT up FROM UserPreference up WHERE up.userId = :userId AND up.key IN :keys")
+    List<UserPreference> findByUserIdAndKeyIn(@Param("userId") UUID userId, @Param("keys") List<String> keys);
+
+    /**
+     * Count preferences for a user
+     */
+    long countByUserId(UUID userId);
+}

@@ -1,61 +1,93 @@
 package com.insightx.repositories;
 
-// TasteProfileRepository - Data access for taste profiles
-// Extends JpaRepository for CRUD operations
-//
-// Custom Query Methods:
-// - findByUserId(UUID userId): Optional<TasteProfile>
-//   Get taste profile for user (one-to-one relationship)
-//
-// - existsByUserId(UUID userId): boolean
-//   Check if profile exists for user
-//
-// - findByLastCalculatedBefore(LocalDateTime date): List<TasteProfile>
-//   Find stale profiles needing recalculation
-//   Example: Find profiles older than 7 days
-//
-// - deleteByUserId(UUID userId): void
-//   Remove profile (will be regenerated on next request)
-//
-// Recalculation Queries:
-// - @Query("SELECT tp FROM TasteProfile tp WHERE tp.lastCalculated < :threshold OR tp.userId IN :userIds")
-//   List<TasteProfile> findStaleOrSpecificProfiles(@Param("threshold") LocalDateTime threshold, @Param("userIds") List<UUID> userIds)
-//   Find profiles to recalculate (either old or specific users)
-//
-// Batch Operations:
-// - @Modifying
-//   @Query("UPDATE TasteProfile tp SET tp.lastCalculated = :date WHERE tp.userId IN :userIds")
-//   void updateLastCalculatedForUsers(@Param("userIds") List<UUID> userIds, @Param("date") LocalDateTime date)
-//   Mark profiles as recalculated
-//
-// Profile Data Access:
-// - Store profileData as JSON/JSONB in PostgreSQL
-// - Use @Type(JsonType.class) or similar for JSON mapping
-// - Query specific JSON fields using native queries if needed
-//
-// Example JSON Queries (PostgreSQL specific):
-// - @Query(value = "SELECT * FROM taste_profiles WHERE profile_data->>'averageRating' > :minRating", nativeQuery = true)
-//   List<TasteProfile> findByMinAverageRating(@Param("minRating") String minRating)
-//
-// Cache Strategy:
-// - Always check Redis cache first (service layer)
-// - Cache key: "taste_profile:{userId}"
-// - TTL: 1 hour
-// - Invalidate on recalculation
-//
-// Recalculation Triggers (handled in service layer):
-// - New rating added (async)
-// - Profile older than 7 days
-// - User requests refresh
-// - After every 5 new ratings
-//
-// Performance Tips:
-// - Index on userId (unique)
-// - Index on lastCalculated for finding stale profiles
-// - Use JSONB type in PostgreSQL for better performance
-// - Consider GIN index on profileData for JSON queries
-//
-// Future Enhancements:
-// - Store profile versions for schema evolution
-// - Keep historical profiles for tracking changes
-// - Similarity matching between profiles
+import com.insightx.entities.TasteProfile;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * TasteProfileRepository - Data access for taste profiles
+ * 
+ * Manages computed user preferences stored as JSONB.
+ * Profile generation requires minimum 3 ratings.
+ * Supports recency weighting and explicit/implicit preference merging.
+ */
+@Repository
+public interface TasteProfileRepository extends JpaRepository<TasteProfile, UUID> {
+
+    // ========================================
+    // Basic Queries
+    // ========================================
+
+    /**
+     * Get taste profile for user (one-to-one relationship)
+     */
+    Optional<TasteProfile> findByUserId(UUID userId);
+
+    /**
+     * Check if profile exists for user
+     */
+    boolean existsByUserId(UUID userId);
+
+    // ========================================
+    // Staleness Detection
+    // ========================================
+
+    /**
+     * Find stale profiles needing recalculation (older than threshold)
+     */
+    List<TasteProfile> findByLastCalculatedBefore(LocalDateTime threshold);
+
+    /**
+     * Find profiles that need recalculation (either old or specific users)
+     */
+    @Query("SELECT tp FROM TasteProfile tp WHERE tp.lastCalculated < :threshold OR tp.userId IN :userIds")
+    List<TasteProfile> findStaleOrSpecificProfiles(@Param("threshold") LocalDateTime threshold, 
+                                                     @Param("userIds") List<UUID> userIds);
+
+    /**
+     * Count stale profiles
+     */
+    long countByLastCalculatedBefore(LocalDateTime threshold);
+
+    // ========================================
+    // Bulk Operations
+    // ========================================
+
+    /**
+     * Update last calculated timestamp for multiple users
+     */
+    @Modifying
+    @Query("UPDATE TasteProfile tp SET tp.lastCalculated = :date WHERE tp.userId IN :userIds")
+    void updateLastCalculatedForUsers(@Param("userIds") List<UUID> userIds, @Param("date") LocalDateTime date);
+
+    /**
+     * Increment version for a profile (after recalculation)
+     */
+    @Modifying
+    @Query("UPDATE TasteProfile tp SET tp.version = tp.version + 1 WHERE tp.userId = :userId")
+    void incrementVersion(@Param("userId") UUID userId);
+
+    // ========================================
+    // Delete Operations
+    // ========================================
+
+    /**
+     * Remove profile (will be regenerated on next request)
+     */
+    void deleteByUserId(UUID userId);
+
+    /**
+     * Delete old profiles (cleanup job)
+     */
+    @Modifying
+    @Query("DELETE FROM TasteProfile tp WHERE tp.lastCalculated < :cutoffDate")
+    void deleteOldProfiles(@Param("cutoffDate") LocalDateTime cutoffDate);
+}

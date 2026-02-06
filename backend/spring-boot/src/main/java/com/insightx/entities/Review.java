@@ -61,6 +61,10 @@ public class Review {
     @Builder.Default
     private Visibility visibility = Visibility.PUBLIC;
 
+    @Column(name = "upvote_count", nullable = false)
+    @Builder.Default
+    private Integer upvoteCount = 0;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
